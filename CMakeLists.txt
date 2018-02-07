@@ -3,12 +3,21 @@ cmake_minimum_required (VERSION 3.0)
 project (OpenGL_Analog_Clock)
 
 find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(glfw3 REQUIRED)
+
+include_directories(
+    Include/
+    .
+)
 
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
 	glfw
 	GLEW
 )
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -ggdb")
 
 add_definitions(
 	-DTW_STATIC
@@ -20,6 +29,7 @@ add_definitions(
 
 add_executable(clock
     main.c
+    shader.c
 )
 
 target_link_libraries(clock
