@@ -58,7 +58,13 @@ int main(void) {
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("../shaders/SimpleVertexShader.vertexshader", "../shaders/SimpleFragmentShader.fragmentshader");
+	GLuint programID;
+    if (LoadShaders(&programID,
+                    "../shaders/SimpleVertexShader.vertexshader",
+                    "../shaders/SimpleFragmentShader.fragmentshader")) {
+        fprintf(stderr, "Could not load shaders.\n");
+        return -1;
+    }
 
 	static const GLfloat g_vertex_buffer_data[] = { 
 		-1.0f, -1.0f, 0.0f,

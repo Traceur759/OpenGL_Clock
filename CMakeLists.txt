@@ -1,6 +1,6 @@
 # CMake entry point
 cmake_minimum_required (VERSION 3.0)
-project (OpenGL_Analog_Clock)
+project(OpenGL_Analog_Clock C)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
