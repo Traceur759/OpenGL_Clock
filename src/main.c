@@ -11,7 +11,7 @@
 // Include shader
 #include "shader.h"
 
-GLFWwindow* window;
+static GLFWwindow* window;
 
 int main(void) {
 
@@ -29,7 +29,7 @@ int main(void) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(1024, 768, "OpenGL Clock", NULL, NULL);
+	window = glfwCreateWindow(1280, 720, "OpenGL Clock", NULL, NULL);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		getchar();
@@ -67,9 +67,9 @@ int main(void) {
     }
 
 	static GLfloat g_vertex_buffer_data[] = { 
-		-1.0f, -1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,
-		 0.0f,  1.0f, 0.0f
+		-1.0f, -1.0f, 1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 0.0f,  1.0f, -0.2f
 	};
 
 	GLuint vertexbuffer;
@@ -104,8 +104,14 @@ int main(void) {
 		// Use our shader
 		glUseProgram(programID);
         glfwGetCursorPos(window, &xpos, &ypos);
-        g_vertex_buffer_data[0] = (float)xpos / 1024 * 2 - 1;
-        g_vertex_buffer_data[1] = 2 - (float)ypos / 768 * 2 - 1;
+        g_vertex_buffer_data[0] = (float)xpos / 1280 * 2 - 1 - 0.15;
+        g_vertex_buffer_data[1] = 2 - (float)ypos / 720 * 2 - 1 - 0.15;
+
+        g_vertex_buffer_data[3] = (float)xpos / 1280 * 2 - 1 + 0.15;
+        g_vertex_buffer_data[4] = 2 - (float)ypos / 720 * 2 - 1 - 0.15;
+
+        g_vertex_buffer_data[6] = (float)xpos / 1280 * 2 - 1;
+        g_vertex_buffer_data[7] = 2 - (float)ypos / 720 * 2 - 1 + 0.15;
 
 	    GLuint vertexbuffer;
 	    glGenBuffers(1, &vertexbuffer);
