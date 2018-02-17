@@ -66,7 +66,7 @@ int main(void) {
         return -1;
     }
 
-	static const GLfloat g_vertex_buffer_data[] = { 
+	static GLfloat g_vertex_buffer_data[] = { 
 		-1.0f, -1.0f, 0.0f,
 		 1.0f, -1.0f, 0.0f,
 		 0.0f,  1.0f, 0.0f
@@ -77,6 +77,25 @@ int main(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
+    // position
+    double a[3];
+    a[0] = 0;
+    a[1] = 0;
+    a[2] = 0;
+    // horizontal angle : toward -Z
+    double horizontalAngle = 3.14f;
+    // vertical angle : 0, look at the horizon
+    double verticalAngle = 0.0f;
+    // Initial Field of View
+    double initialFoV = 45.0f;
+    
+    double speed = 3.0f; // 3 units / second
+    double mouseSpeed = 0.005f;
+    // Get mouse position
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+
 	do {
 		// Clear the screen. It's not mentioned before Tutorial 02,
         // but it can cause flickering, so it's there nonetheless.
@@ -84,6 +103,14 @@ int main(void) {
 
 		// Use our shader
 		glUseProgram(programID);
+        glfwGetCursorPos(window, &xpos, &ypos);
+        g_vertex_buffer_data[0] = (float)xpos / 1024 * 2 - 1;
+        g_vertex_buffer_data[1] = 2 - (float)ypos / 768 * 2 - 1;
+
+	    GLuint vertexbuffer;
+	    glGenBuffers(1, &vertexbuffer);
+	    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
