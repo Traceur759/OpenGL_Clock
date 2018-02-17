@@ -28,8 +28,8 @@ add_definitions(
 )
 
 add_executable(clock
-    main.c
-    shader.c
+    src/main.c
+    src/shader.c
 )
 
 target_link_libraries(clock
