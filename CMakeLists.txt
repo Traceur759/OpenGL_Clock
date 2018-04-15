@@ -1,6 +1,7 @@
 # CMake entry point
 cmake_minimum_required (VERSION 3.0)
 project(OpenGL_Analog_Clock C)
+cmake_policy(SET CMP0072 OLD)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
@@ -17,7 +18,7 @@ set(ALL_LIBS
 	GLEW
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -ggdb")
+set(CMAKE_C_FLAGS "-O0 -ggdb")
 
 add_definitions(
 	-DTW_STATIC
@@ -29,7 +30,9 @@ add_definitions(
 
 add_executable(clock
     src/main.c
+    src/clock.c
     src/shader.c
+    src/matrix.c
 )
 
 target_link_libraries(clock

@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <GL/glew.h>
-
+#include "clock.h"
 #include "shader.h"
 
 static int

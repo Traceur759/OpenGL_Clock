@@ -1,64 +1,20 @@
-// Include standard headers
-#include <stdio.h>
-#include <stdlib.h>
+// Include APIs
+#include "clock.h"
 
-// Include GLEW
-#include <GL/glew.h>
+int main(int argc, char *argv[]) {
 
-// Include GLFW
-#include <GLFW/glfw3.h>
-
-// Include shader
-#include "shader.h"
-
-static GLFWwindow* window;
-
-int main(void) {
-
-	// Initialise GLFW
-	if(!glfwInit()) {
-		fprintf(stderr, "Failed to initialize GLFW\n");
-		getchar();
-		return -1;
-	}
-
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(1280, 720, "OpenGL Clock", NULL, NULL);
-	if (window == NULL) {
-		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
-		getchar();
-		glfwTerminate();
-		return -1;
-	}
-
-	glfwMakeContextCurrent(window);
-
-	// Initialize GLEW
-	if (glewInit() != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW\n");
-		getchar();
-		glfwTerminate();
-		return -1;
-	}
-
-	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
-	// Dark grey background
-	glClearColor(0.15f, 0.15f, 0.15f, 0.0f);
-
+    GLFWwindow *window;
 	GLuint VertexArrayID;
+	GLuint programID;
+
+    if (clock_init(&window)) {
+        return -1;
+    }
+
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID;
     if (LoadShaders(&programID,
                     "../shaders/SimpleVertexShader.vertexshader",
                     "../shaders/SimpleFragmentShader.fragmentshader")) {
@@ -66,10 +22,10 @@ int main(void) {
         return -1;
     }
 
-	static GLfloat g_vertex_buffer_data[] = { 
-		-1.0f, -1.0f, 1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 0.0f,  1.0f, -0.2f
+	static GLdouble g_vertex_buffer_data[] = { 
+		-0.3f, -0.3f, 0.3f,
+		 0.3f, -0.3f, -0.3f,
+		 0.0f,  0.3f, -0.0f
 	};
 
 	GLuint vertexbuffer;
@@ -77,23 +33,19 @@ int main(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-    // position
-    double a[3];
-    a[0] = 0;
-    a[1] = 0;
-    a[2] = 0;
-    // horizontal angle : toward -Z
-    double horizontalAngle = 3.14f;
-    // vertical angle : 0, look at the horizon
-    double verticalAngle = 0.0f;
-    // Initial Field of View
-    double initialFoV = 45.0f;
-    
-    double speed = 3.0f; // 3 units / second
-    double mouseSpeed = 0.005f;
-    // Get mouse position
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
+
+    GLdouble **matrices = calloc(1, sizeof(GLdouble *));
+
+    GLdouble *rot_mat = matrix_new();
+
+    rot_mat[0] = cos(M_PI*2/60);
+    rot_mat[1] = -sin(M_PI*2/60);
+    rot_mat[4] = sin(M_PI*2/60);
+    rot_mat[5] = cos(M_PI*2/60);
+
+    *matrices = rot_mat;
 
 
 	do {
@@ -103,15 +55,17 @@ int main(void) {
 
 		// Use our shader
 		glUseProgram(programID);
-        glfwGetCursorPos(window, &xpos, &ypos);
-        g_vertex_buffer_data[0] = (float)xpos / 1280 * 2 - 1 - 0.15;
-        g_vertex_buffer_data[1] = 2 - (float)ypos / 720 * 2 - 1 - 0.15;
+        //glfwGetCursorPos(window, &xpos, &ypos);
+        //g_vertex_buffer_data[0] = (float)xpos / 1280 * 2 - 1 - 0.15;
+        //g_vertex_buffer_data[1] = 2 - (float)ypos / 720 * 2 - 1 - 0.15;
 
-        g_vertex_buffer_data[3] = (float)xpos / 1280 * 2 - 1 + 0.15;
-        g_vertex_buffer_data[4] = 2 - (float)ypos / 720 * 2 - 1 - 0.15;
+        //g_vertex_buffer_data[3] = (float)xpos / 1280 * 2 - 1 + 0.15;
+        //g_vertex_buffer_data[4] = 2 - (float)ypos / 720 * 2 - 1 - 0.15;
 
-        g_vertex_buffer_data[6] = (float)xpos / 1280 * 2 - 1;
-        g_vertex_buffer_data[7] = 2 - (float)ypos / 720 * 2 - 1 + 0.15;
+        //g_vertex_buffer_data[6] = (float)xpos / 1280 * 2 - 1;
+        //g_vertex_buffer_data[7] = 2 - (float)ypos / 720 * 2 - 1 + 0.15;
+        matrix_transform(g_vertex_buffer_data, 3,
+                         matrices, 1);
 
 	    GLuint vertexbuffer;
 	    glGenBuffers(1, &vertexbuffer);
@@ -124,7 +78,7 @@ int main(void) {
 		glVertexAttribPointer(
 			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
 			3,                  // size
-			GL_FLOAT,           // type
+			GL_DOUBLE,           // type
 			GL_FALSE,           // normalized?
 			0,                  // stride
 			NULL                // array buffer offset
@@ -140,6 +94,7 @@ int main(void) {
 		glfwPollEvents();
 
         // Check if the ESC key was pressed or the window was closed
+        usleep(1000000/60);
 	} while(glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		   glfwWindowShouldClose(window) == 0);
 
