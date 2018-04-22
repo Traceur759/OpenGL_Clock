@@ -15,8 +15,9 @@
 #include <GLFW/glfw3.h>
 
 // Include project headers
-#include <shader.h>
+#include <model.h>
 #include <matrix.h>
+#include <shader.h>
 
 // Define macros
 #define xfree(p) if (p) free((void *)p)
@@ -24,5 +25,7 @@
 // Declare functions
 
 int clock_init(GLFWwindow **);
+int clock_run(GLFWwindow *);
 
 #endif
+

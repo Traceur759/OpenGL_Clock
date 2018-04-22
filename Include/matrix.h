@@ -1,9 +1,12 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-GLdouble *matrix_new(void);
+GLfloat *matrix_new(void);
 
-int matrix_transform(GLdouble *, int,
-                     GLdouble **, int);
+GLfloat *matrix_multip(GLfloat *, GLfloat *);
+
+GLfloat *matrix_transform(GLfloat *, int,
+                           GLfloat *);
 
 #endif
+
