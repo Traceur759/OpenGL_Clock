@@ -64,17 +64,17 @@ clock_run(GLFWwindow *window) {
 		 0.0f,  0.3f, 0.0f, 1.0f
 	};
     Model *model;
-    model = model_load("../cube.obj");
+    model = model_load("../clock.obj");
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, model->bufsize*4*sizeof(GLfloat), model->buffer, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, model->bufsize*4*sizeof(GLfloat), model->object, GL_STATIC_DRAW);
 
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 
-    GLfloat **matrices = malloc(2 * sizeof(GLfloat *));
+    GLfloat **matrices = malloc(4 * sizeof(GLfloat *));
 
     GLfloat *temp = matrix_new();
 
@@ -84,22 +84,19 @@ clock_run(GLFWwindow *window) {
     //temp[5] = cos(M_PI*2/60);
 
     matrices[0] = temp;
-    temp = matrix_new();
+    time_t t = time(NULL);
+    for (int i = 1; i < 4; i++) {
+        temp = matrix_new();
 
-    temp[0] = cos(M_PI*2/60/4);
-    temp[8] = -sin(M_PI*2/60/4);
-    temp[2] = sin(M_PI*2/60/4);
-    temp[10] = cos(M_PI*2/60/4);
+        temp[0] = cos(M_PI*2/60*(t%60));
+        temp[4] = -sin(M_PI*2/60*(t%60));
+        temp[1] = sin(M_PI*2/60*(t%60));
+        temp[5] = cos(M_PI*2/60*(t%60));
 
-    matrices[1] = temp;
-
-    GLfloat *mat = matrix_new();
-
-    for (int i = 1; i >= 0; i--) {
-        temp = matrix_multip(matrices[i], mat);
-        free(mat);
-        mat = temp;
+        matrices[i] = temp;
+        t /= 60;
     }
+
 
     GLfloat *projection = matrix_new();
     GLfloat *buffer;
@@ -107,11 +104,16 @@ clock_run(GLFWwindow *window) {
     buffer = matrix_new();
     buffer[0] = (GLfloat)9/16;
     temp = matrix_multip(projection, buffer);
+    free(buffer);
     free(projection);
-    projection = buffer;
+    projection = temp;
     temp = malloc(model->bufsize * 4 * sizeof(GLfloat));
     buffer = malloc(model->bufsize * 4 * sizeof(GLfloat));
-    memcpy(temp, model->buffer, model->bufsize * 4 * sizeof(GLfloat));
+    memcpy(temp, model->object, model->bufsize * 4 * sizeof(GLfloat));
+
+    GLfloat *orig;
+    orig = malloc(model->bufsize * 4 * sizeof(GLfloat));
+    memcpy(orig, model->object, model->bufsize * 4 * sizeof(GLfloat));
 
 	do {
 		// Clear the screen. It's not mentioned before Tutorial 02,
@@ -129,18 +131,35 @@ clock_run(GLFWwindow *window) {
 
         //g_vertex_buffer_data[6] = (float)xpos / 1280 * 2 - 1;
         //g_vertex_buffer_data[7] = 2 - (float)ypos / 720 * 2 - 1 + 0.15;
-        buffer = matrix_transform(temp, model->bufsize, mat);
-        free(temp);
-        temp = buffer;
-        buffer = matrix_transform(buffer, model->bufsize, projection);
-        memcpy(model->buffer, buffer, model->bufsize * 4 * sizeof(GLfloat));
+        time_t t = time(NULL);
+        for (int i = 1; i < 4; i++) {
+            GLfloat *temp_mat;
+            temp_mat = matrix_new();
+
+            temp_mat[0] = cos(M_PI*2/60*(t%60));
+            temp_mat[4] = -sin(M_PI*2/60*(t%60));
+            temp_mat[1] = sin(M_PI*2/60*(t%60));
+            temp_mat[5] = cos(M_PI*2/60*(t%60));
+
+            matrices[i] = temp_mat;
+            t /= 60;
+        }
+        for (int i = 2; i < 5; i++) {
+            GLfloat *slice;
+            slice = matrix_transform(&(orig[model->entities[i]->offset]), model->entities[i]->size, matrices[i-1]);
+            memcpy(&(temp[model->entities[i]->offset]), slice, model->entities[i]->size* 4 * sizeof(GLfloat));
+            free(slice);
+        }
         free(buffer);
 
+        buffer = matrix_transform(temp, model->bufsize, projection);
+        memcpy(model->object, buffer, model->bufsize * 4 * sizeof(GLfloat));
 
 	    GLuint vertexbuffer;
 	    glGenBuffers(1, &vertexbuffer);
 	    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	    glBufferData(GL_ARRAY_BUFFER, model->bufsize * 4 * sizeof(GLfloat), model->buffer, GL_STATIC_DRAW);
+	    glBufferData(GL_ARRAY_BUFFER, model->bufsize * 4 * sizeof(GLfloat), model->object, GL_STATIC_DRAW);
+
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
@@ -154,7 +173,8 @@ clock_run(GLFWwindow *window) {
 			NULL                // array buffer offset
 		);
 
-		// Draw the triangle !
+
+		// Draw!
 		glDrawArrays(GL_TRIANGLES, 0, model->bufsize); // 3 indices starting at 0 -> 1 triangle
 
 		glDisableVertexAttribArray(0);
@@ -166,10 +186,10 @@ clock_run(GLFWwindow *window) {
         // Check if the ESC key was pressed or the window was closed
         usleep(1000000/60);
 	} while(glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-		   glfwWindowShouldClose(window) == 0);
+		   !glfwWindowShouldClose(window));
 
 	// Close OpenGL window and terminate GLFW
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
         free(matrices[i]);
     }
     free(matrices);

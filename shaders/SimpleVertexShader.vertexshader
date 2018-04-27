@@ -1,12 +1,14 @@
 #version 330 core
 
 // Input vertex data, different for all executions of this shader.
-layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 0) in vec4 position;
+out float colorF;
 
-void main(){
+void main() {
+    if (position.z <= 0.0) 
+        colorF = 0; 
+    else 
+        colorF = 1;
 
-    gl_Position.xyz = vertexPosition_modelspace;
-    gl_Position.w = 1.0;
-
+    gl_Position = position;
 }
-

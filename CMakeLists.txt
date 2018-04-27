@@ -18,7 +18,7 @@ set(ALL_LIBS
 	GLEW
 )
 
-set(CMAKE_C_FLAGS "-O0 -ggdb")
+set(CMAKE_C_FLAGS "-O0 -ggdb -lm")
 
 add_definitions(
 	-DTW_STATIC
